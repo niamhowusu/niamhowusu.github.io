@@ -384,5 +384,32 @@
   hook(); layout();
 })();
 </script>
+<script>
+/* Contact arrows: desktop arrow sits midway between the invitation and the email button; phone arrow starts just right of the "!" */
+(function(){
+  var p = document.querySelector('.contact-invite'); if (!p) return;
+  var a = p.querySelector('.contact-arrow'), e = document.querySelector('.email-arrow'), box = e && e.parentNode;
+  function place(){
+    var txt = p.querySelector('span').firstChild, r = document.createRange(); r.selectNodeContents(txt);
+    var rs = r.getClientRects(), last = rs[rs.length - 1], blk = r.getBoundingClientRect();
+    if (window.innerWidth <= 920) {
+      p.style.position = 'relative'; p.style.paddingBottom = '0';
+      var pr = p.getBoundingClientRect();
+      var tailX = last.right + 10, tailY = last.top + last.height * 0.62;   // tail of the rotated arrow = svg centre + (2,-35)
+      var left = tailX - 39 - pr.left, top = tailY + 18 - pr.top;
+      a.style.cssText = 'position:absolute;margin:0;left:' + left + 'px;top:' + top + 'px';
+      p.style.paddingBottom = Math.max(0, top + 17 + 37 - pr.height + 4) + 'px';
+    } else if (box) {
+      p.style.paddingBottom = ''; a.style.cssText = '';
+      var br = box.getBoundingClientRect(), gap = br.left - blk.right;
+      var midY = ((last.top + last.bottom) / 2 + (br.top + br.bottom) / 2) / 2;
+      e.style.left = (blk.right + (gap - 56) / 2 - br.left) + 'px'; e.style.right = 'auto';
+      e.style.top = (midY - 16 - br.top) + 'px'; e.style.transform = 'none';
+    }
+  }
+  place(); window.addEventListener('resize', place);
+  if (document.fonts) document.fonts.ready.then(place);
+})();
+</script>
 </body>
 </html>
