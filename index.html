@@ -413,19 +413,25 @@
 /* Contact arrows: desktop arrow sits midway between the invitation and the email button; phone arrow starts just right of the "!" */
 (function(){
   var p = document.querySelector('.contact-invite'); if (!p) return;
-  var a = p.querySelector('.contact-arrow'), e = document.querySelector('.email-arrow'), box = e && e.parentNode;
+  var loop, a = p.querySelector('.contact-arrow'), e = document.querySelector('.email-arrow'), box = e && e.parentNode;
   function place(){
     var txt = p.querySelector('span').firstChild, r = document.createRange(); r.selectNodeContents(txt);
     var rs = r.getClientRects(), last = rs[rs.length - 1], blk = r.getBoundingClientRect();
     if (window.innerWidth <= 920) {
-      p.style.position = 'relative'; p.style.paddingBottom = '0';
+      p.style.position = 'relative'; p.style.paddingBottom = '46px'; a.style.display = 'none';
       var pr = p.getBoundingClientRect();
-      var tailX = last.right + 10, tailY = last.top + last.height * 0.62;   // tail of the rotated arrow = svg centre + (2,-35)
-      var left = tailX - 39 - pr.left, top = tailY + 18 - pr.top;
-      a.style.cssText = 'position:absolute;margin:0;left:' + left + 'px;top:' + top + 'px';
-      p.style.paddingBottom = Math.max(0, top + 17 + 37 - pr.height + 4) + 'px';
+      function top(el){ var t = 0; while (el) { t += el.offsetTop; el = el.offsetParent; } return t; }  /* layout position, ignores reveal transforms */
+      var tx = last.right - pr.left + 9, ty = last.top + last.height * 0.55 - pr.top, E = top(box) - top(p) - 14;
+      var P = [[tx+34,ty-8],[tx+44,ty+34],[tx+16,ty+30], [tx-6,ty+26],[tx+2,ty+2],[tx+22,ty+14], [tx+40,ty+26],[tx+34,E-26],[tx+28,E]];
+      var d = 'M' + tx + ' ' + ty; for (var i = 0; i < P.length; i += 3) d += ' C' + P[i] + ' ' + P[i+1] + ' ' + P[i+2];
+      var c2 = P[P.length-2], end = P[P.length-1], ang = Math.atan2(end[1]-c2[1], end[0]-c2[0]);
+      function hd(s){ return [end[0] - 10*Math.cos(ang+s), end[1] - 10*Math.sin(ang+s)]; }
+      if (!loop) { loop = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); loop.setAttribute('aria-hidden', 'true');
+        loop.setAttribute('style', 'position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible'); p.appendChild(loop); }
+      loop.style.display = '';
+      loop.innerHTML = '<g fill="none" stroke="#E9A3B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/><path d="M' + hd(0.5) + ' L' + end + ' L' + hd(-0.5) + '"/></g>';
     } else if (box) {
-      p.style.paddingBottom = ''; a.style.cssText = '';
+      p.style.paddingBottom = ''; a.style.cssText = ''; if (loop) loop.style.display = 'none';
       var br = box.getBoundingClientRect(), gap = br.left - blk.right;
       var midY = ((last.top + last.bottom) / 2 + (br.top + br.bottom) / 2) / 2;
       e.style.left = (blk.right + (gap - 56) / 2 - br.left) + 'px'; e.style.right = 'auto';
